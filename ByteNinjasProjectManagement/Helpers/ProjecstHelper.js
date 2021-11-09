@@ -49,6 +49,7 @@ const projectConverter = {
 
 const getAllProjects = (callback) => {
     const unsubsribe = firebase.firestore().collection('projects').onSnapshot((querySnapshot) => {
+        console.log("in on query snapshot");
         let projects = [];
         querySnapshot.forEach((document) => {
             let data = document.data();
@@ -92,4 +93,19 @@ const addProject = (project) => {
     return promise;
 };
 
-export { addProject, getAllProjects, getProject, projectConverter, Project };
+const updateProject = (projectId, project) => {
+    const firebaseProject = projectConverter.toFirebase(project);
+
+    const promise = new Promise(async (resolve, reject) => {
+        try {
+            const response = await firebase.firestore().collection('projects').doc(projectId).update(firebaseProject);
+            resolve(response);
+        } catch(error) {
+            reject(error);
+        }
+    })
+
+    return promise;
+}
+
+export { addProject, updateProject, getAllProjects, getProject, projectConverter, Project };

@@ -1,15 +1,20 @@
 import palette from 'google-material-color-palette-json';
 import React from 'react';
 import {Text, StyleSheet, TouchableOpacity, View} from 'react-native';
-import {Card} from 'react-native-shadow-cards';
 
-export default function ProjectListItem({project, onPress}) {
+import {Card} from 'react-native-shadow-cards';
+import { CheckBox } from 'react-native-elements'
+
+export default function SelectMemberListItem({ user, selected, onPress }) {
     return(
         <TouchableOpacity style={styles.listItem} onPress={() => onPress()}>
             <Card style={styles.card}>
-                <Text style={styles.listItemText}>{project.name}</Text>
-                <Text style={styles.listItemSubText}>{project.tasks.length} Tasks</Text>
-                <Text style={styles.listItemSubText}>{project.members.length} Members</Text>
+                <View style={styles.detailsView}>
+                    <Text style={styles.listItemText}>{user.firstName} {user.lastName}</Text>
+                    <Text style={styles.listItemSubText}>{user.email}</Text>
+                    <Text style={styles.listItemSubText}>${user.hourlyRate} / hour</Text>
+                </View>
+                <CheckBox style={styles.checkbox} checked={selected} size={35} checkedColor='darkslateblue'/>
             </Card>
         </TouchableOpacity>
     );
@@ -48,10 +53,19 @@ const styles = StyleSheet.create({
         borderRadius: 20,
     },
     card: {
+        flexDirection: 'row',
+        alignItems: 'center',
         elevation: 1,
         padding: 20,
         width: '100%',
         borderRadius: 12,
         shadowOffset: {width: 1, height: 1},
+    },
+    detailsView: {
+        flex: 5,
+    },
+    checkbox: {
+        flex: 1,
+        alignSelf: 'flex-end',
     },
 });

@@ -3,13 +3,13 @@ import React from 'react';
 import {Text, StyleSheet, TouchableOpacity, View} from 'react-native';
 import {Card} from 'react-native-shadow-cards';
 
-export default function ProjectListItem({project, onPress}) {
+export default function MemberListItem({ member }) {
     return(
-        <TouchableOpacity style={styles.listItem} onPress={() => onPress()}>
+        <TouchableOpacity style={styles.listItem}>
             <Card style={styles.card}>
-                <Text style={styles.listItemText}>{project.name}</Text>
-                <Text style={styles.listItemSubText}>{project.tasks.length} Tasks</Text>
-                <Text style={styles.listItemSubText}>{project.members.length} Members</Text>
+                <Text style={styles.listItemText}>{member.firstName} {member.lastName}</Text>
+                <Text style={styles.listItemSubText}>{member.email}</Text>
+                <Text style={styles.listItemSubText}>${member.hourlyRate} / hour</Text>
             </Card>
         </TouchableOpacity>
     );

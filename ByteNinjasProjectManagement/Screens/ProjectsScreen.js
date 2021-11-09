@@ -1,6 +1,8 @@
 import { StatusBar } from 'expo-status-bar';
 import React, {useState, useLayoutEffect, useEffect, useRef} from 'react';
 import { StyleSheet, Text, View, FlatList, Button, Image } from 'react-native';
+
+import CustomActivityIndicator from '../Components/CustomActivityIndicator';
 import ProjectListItem from '../Components/ProjectListItem';
 import { getAllProjects } from '../Helpers/ProjecstHelper';
 
@@ -13,6 +15,7 @@ export default function ProjectsScreen({navigation}) {
         };
     };
     let isFirstLoad = useRef(true);
+    const [isLoading, setIsLoading] = useState(false);
     const [projects, setProjects] = useState([]);
     // const [projects, setProjects] = useState([
     //     {
@@ -98,27 +101,25 @@ export default function ProjectsScreen({navigation}) {
                 // <Image source={require('../assets/byte-ninja.png')} style={{width: 20, height: 20, marginRight: 5,}}></Image>
             ),
         });
-    }, navigation);
+    }, [navigation]);
 
     useEffect(() => {
-        // Only subscribe on first load
-        console.log('Is first load: ' + isFirstLoad.current);
-        if (isFirstLoad.current) {
-            isFirstLoad.current = false;
-            console.log('In use effect: Projects screen');
-            console.log('Is first load: ' + isFirstLoad.current);
-            let unsubScribe = getAllProjects((projects) => {
-                let localProjects = projects.concat([]);
-                setProjects(localProjects);
-            });
+        setIsLoading(true);
 
-            // Unsubscribe when component will unmount to prevent memory leak
-            return () => { unsubScribe() };
-        }
-    });
+        let unsubScribe = getAllProjects((projects) => {
+            setIsLoading(false);
+
+            let localProjects = projects.concat([]);
+            setProjects(localProjects);
+        });
+
+        // Unsubscribe when component will unmount to prevent memory leak
+        return () => { unsubScribe() };
+    }, []);
 
     return (
         <View style={styles.container}>
+            { isLoading && <CustomActivityIndicator /> }
             <FlatList
                 style={styles.flatList}
                 data={projects} 
