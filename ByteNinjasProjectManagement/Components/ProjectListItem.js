@@ -3,11 +3,30 @@ import React from 'react';
 import {Text, StyleSheet, TouchableOpacity, View} from 'react-native';
 import {Card} from 'react-native-shadow-cards';
 
+import PillView from './PillView';
+
 export default function ProjectListItem({project, onPress}) {
+    const getStatusText = () => {
+        let localStatusText = getIsComplete(project) ? 'Complete' : 'In Progress';
+        return localStatusText;
+    }
+
+    const getIsComplete = () => {
+        let localIsComplete = (project.tasksCompleted === project.tasks.length) &&
+            (project.tasks.length !== 0);
+        return localIsComplete;
+    }
+
     return(
         <TouchableOpacity style={styles.listItem} onPress={() => onPress()}>
             <Card style={styles.card}>
-                <Text style={styles.listItemText}>{project.name}</Text>
+                <View style={styles.listItemHeader}>
+                    <Text numberOfLines={2} style={styles.listItemText}>{project.name}</Text>
+                    <PillView status={ getStatusText() }/>
+                    {/* <View style={styles.listItemPill}>
+                        <Text style={styles.pillText}>In Progress</Text>
+                    </View> */}
+                </View>
                 <Text style={styles.listItemSubText}>{project.tasks.length} Tasks</Text>
                 <Text style={styles.listItemSubText}>{project.members.length} Members</Text>
             </Card>
@@ -27,12 +46,18 @@ const styles = StyleSheet.create({
         alignContent: 'center',
         justifyContent: 'center',
     },
+    listItemHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+    },
     listItemText: {
         fontSize: 22,
-        width: '100%',
         fontWeight: '600',
         color: palette.grey.shade_900,
         padding: 2,
+        marginRight: 8,
+        maxWidth: '60%'
     },
     listItemSubText: {
         padding: 2,
@@ -40,12 +65,19 @@ const styles = StyleSheet.create({
         color: palette.grey.shade_900,
     },
     listItemPill: {
-        paddingLeft: 20,
-        paddingRight: 20,
-        paddingTop: 5,
-        paddingBottom: 5,
-        backgroundColor: 'gray',
+        paddingLeft: 16,
+        paddingRight: 16,
+        paddingTop: 6,
+        paddingBottom: 6,
+        backgroundColor: palette.grey.shade_300,
         borderRadius: 20,
+        maxWidth: 115,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    pillText: {
+        fontWeight: '700',
+        color: palette.grey.shade_800,
     },
     card: {
         elevation: 1,

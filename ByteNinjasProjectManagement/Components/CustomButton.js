@@ -13,7 +13,6 @@ const styles = StyleSheet.create({
     btn: {
         padding: 18,
         backgroundColor: 'darkslateblue',
-        margin: 5,
         minHeight: 50,
         justifyContent: 'center',
         borderRadius: 15,

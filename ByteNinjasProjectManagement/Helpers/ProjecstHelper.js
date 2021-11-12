@@ -48,7 +48,8 @@ const projectConverter = {
 };
 
 const getAllProjects = (callback) => {
-    const unsubsribe = firebase.firestore().collection('projects').onSnapshot((querySnapshot) => {
+    const unsubsribe = firebase.firestore().collection('projects')
+        .where('ownerId', '==', currentUser.email).onSnapshot((querySnapshot) => {
         console.log("in on query snapshot");
         let projects = [];
         querySnapshot.forEach((document) => {

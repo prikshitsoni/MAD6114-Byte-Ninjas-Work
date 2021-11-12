@@ -3,9 +3,9 @@ import React from 'react';
 import {Text, StyleSheet, TouchableOpacity, View} from 'react-native';
 import {Card} from 'react-native-shadow-cards';
 
-export default function MemberListItem({ member }) {
+export default function MemberListItem({ member, style }) {
     return(
-        <TouchableOpacity style={styles.listItem}>
+        <TouchableOpacity style={[styles.listItem, style]}>
             <Card style={styles.card}>
                 <Text style={styles.listItemText}>{member.firstName} {member.lastName}</Text>
                 <Text style={styles.listItemSubText}>{member.email}</Text>

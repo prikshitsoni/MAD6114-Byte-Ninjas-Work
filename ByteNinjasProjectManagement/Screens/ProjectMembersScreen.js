@@ -2,6 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import React, {useState, useLayoutEffect, useEffect, useRef} from 'react';
 import { StyleSheet, Text, View, FlatList, Button, Image, TouchableOpacity, Alert, } from 'react-native';
 
+import palette from 'google-material-color-palette-json';
 import { Card } from 'react-native-shadow-cards';
 import CustomActivityIndicator from '../Components/CustomActivityIndicator';
 import MemberListItem from '../Components/MemberListItem';
@@ -11,6 +12,7 @@ import { getUsers } from '../Helpers/UsersHelper';
 export default function ProjectMembersScreen({route, navigation}) {
     // Screen Params
     const { project } = route.params;
+    const { doneCallback } = route.params;
 
     // Mutable References
     const mMembers = useRef([]);
@@ -32,6 +34,10 @@ export default function ProjectMembersScreen({route, navigation}) {
         navigation.goBack();
     };
 
+    const donePressed = () => {
+        doneCallback(mMembers.current);
+    };
+
     // Navigation
     const navigateToSelectMembers = () => {
         navigation.navigate('Select Members', { "currentMembers": mMembers.current, "doneCallback": doneCallbackFromSelect });
@@ -41,7 +47,7 @@ export default function ProjectMembersScreen({route, navigation}) {
     useLayoutEffect(() => {
         navigation.setOptions({
             headerRight: () => (
-                <Button title='Done' color='#fff'/>
+                <Button title='Done' color='#fff' onPress={() => donePressed()}/>
                 // <Image source={require('../assets/byte-ninja.png')} style={{width: 20, height: 20, marginRight: 5,}}></Image>
             ),
         });
@@ -78,12 +84,18 @@ export default function ProjectMembersScreen({route, navigation}) {
                     <Text style={styles.text}>{'>'}</Text>
                 </Card>
             </TouchableOpacity>
-            <Text>This is the members screen</Text>
-            <FlatList
-                style={styles.flatList}
-                data={members} 
-                renderItem={({item}) => <MemberListItem member={item} />}
-            />
+            { 
+                (members.length === 0) &&
+                <Text style={styles.emptyText}>You Don't have any Project Members. Tap 'Select Members' to add Members to the Project.</Text>
+            }
+            {
+                (members.length !== 0) &&
+                <FlatList
+                    style={styles.flatList}
+                    data={members} 
+                    renderItem={({item}) => <MemberListItem member={item} />}
+                />   
+            }
             <StatusBar style="auto" />
         </View>
     );
@@ -94,16 +106,15 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#fff',
         alignItems: 'center',
-        justifyContent: 'center',
-        padding: 15,
+        justifyContent: 'flex-start',
     },
     flatList: {
         width: '100%',
     },
     listItem: {
-        paddingLeft: 0,
-        paddingRight: 0,
-        paddingTop: 8,
+        paddingLeft: 12,
+        paddingRight: 12,
+        paddingTop: 10,
         paddingBottom: 8,
         width: '100%',
         alignContent: 'center',
@@ -126,5 +137,17 @@ const styles = StyleSheet.create({
         paddingLeft: 10, 
         paddingRight: 10,
         color: 'darkslateblue',
+    },
+    emptyText: {
+        textAlign: 'center',
+        fontSize: 20,
+        fontWeight: '500',
+        height: '100%',
+        paddingTop: 15, 
+        paddingBottom: 10,
+        paddingLeft: 10, 
+        paddingRight: 10,
+        marginTop: 10,
+        color: palette.grey.shade_800,
     },
 });

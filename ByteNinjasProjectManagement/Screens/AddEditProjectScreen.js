@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
-import React, {useEffect, useRef, useState} from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import React, {useEffect, useLayoutEffect, useRef, useState} from 'react';
+import { StyleSheet, Text, View, TextInput, Button, TouchableOpacity, Alert, ScrollView } from 'react-native';
 
 import palette from 'google-material-color-palette-json';
 import {Card} from 'react-native-shadow-cards';
@@ -12,17 +12,18 @@ import { addProject, getProject, updateProject, Project } from '../Helpers/Proje
 export default function AddEditProjectScreen({route, navigation}) {
     const { projectId } = route.params;
 
-    let isFirstLoad = useRef(true);
+    const mProject = useRef(new Project());
     const [isLoading, setIsLoading] = useState(false);
-    const [state, setState] = useState({
-        'project': new Project(),
-        'statusText': '',
-        'isComplete': false,
-    });
+    // const [state, setState] = useState({
+    //     'project': new Project(),
+    //     'statusText': '',
+    //     'isComplete': false,
+    // });
     const [project, setProject] = useState(new Project());
     const [statusText, setStatusText] = useState('');
     const [isComplete, setIsComplete] = useState(false);
 
+    // Methods
     const getStatusText = (project) => {
         let localStatusText = getIsComplete(project) ? 'Complete' : 'In Progress';
         return localStatusText;
@@ -35,16 +36,38 @@ export default function AddEditProjectScreen({route, navigation}) {
     }
 
     const updateProjectState = (key, value) => {
-        const localState = {...state};
-        const proj = localState.project;
+        // const localState = {...state};
+        const proj = {...mProject.current};
         proj[key] = value;
 
-        setState(localState);
+        setProject(proj);
+        mProject.current = {...proj};
+        // setState(localState);
     }
 
-    const navigateToMembersScreen = () => {
-        navigation.navigate('Members', { 'project': project });
+    const doneCallbackFromMembers = (members) => {
+        let localEmails = members.map(m => m.email);
+        let localProject = {...mProject.current};
+
+        localProject.members = localEmails;
+        setProject(localProject);
+        mProject.current = {...localProject};
+
+        navigation.goBack();
     };
+
+    const donecallbackFromTasks = (tasks) => {
+        console.log('in done callback from tasks');
+        console.log(tasks);
+        let taskIds = tasks.map(t => t.id);
+        let localProject = {...mProject.current};
+
+        localProject.tasks = taskIds;
+        setProject(localProject);
+        mProject.current = {...localProject};
+
+        navigation.goBack();
+    }
 
     const onSavePressed = async () => {
         // Validate Fields
@@ -53,9 +76,9 @@ export default function AddEditProjectScreen({route, navigation}) {
 
         try {
             if (projectId) {
-                await updateProject(projectId, state.project);
+                await updateProject(projectId, mProject.current);
             } else {
-                await addProject(state.project);
+                await addProject(mProject.current);
             }
 
             setIsLoading(false);
@@ -73,50 +96,46 @@ export default function AddEditProjectScreen({route, navigation}) {
         }
     }
 
+    // Navigation
+    const navigateToMembersScreen = () => {
+        navigation.navigate('Members', { 'project': mProject.current, 'doneCallback': doneCallbackFromMembers });
+    };
+
+    const navigateToTasksScreen = () => {
+        console.log('in navigate');
+        navigation.navigate('Tasks', { 'project': mProject.current, 'doneCallback':  donecallbackFromTasks });
+    };
+
+    // Lifecycles
+    useLayoutEffect(() => {
+        navigation.setOptions({
+            headerRight: () => (
+                <Button title='Save' color='#fff' onPress={() => onSavePressed()}/>
+                // <Image source={require('../assets/byte-ninja.png')} style={{width: 20, height: 20, marginRight: 5,}}></Image>
+            ),
+        });
+    }, [navigation]);
+
     useEffect(() => {
         if (!projectId) {
             return;
         }
 
         let unsubScribe = getProject(projectId, (project) => {
-            const localState = { ...state };
-            let localProject = {...project}; // Copy
-            let isComplete = getIsComplete(localProject);
-            let statusText = getStatusText(localProject);
+            // const localState = { ...state };
+            const localProject = {...project}; // Copy
+            const isComplete = getIsComplete(localProject);
+            const statusText = getStatusText(localProject);
 
-            localState.project = localProject;
-            localState.statusText = statusText;
-            localState.isComplete = isComplete;
+            setProject(localProject);
+            mProject.current = {...localProject};
 
-            setState(localState);
+            setIsComplete(isComplete);
+            setStatusText(statusText);
         });
 
         // Unsubscribe when component will unmount to prevent memory leak
         return () => { unsubScribe() };
-        // Only subscribe on first load
-        // if (isFirstLoad.current && projectId) {
-        //     isFirstLoad.current = false;
-
-        //     let unsubScribe = getProject(projectId, (project) => {
-        //         const localState = { ...state };
-        //         let localProject = {...project}; // Copy
-        //         let isComplete = getIsComplete(localProject);
-        //         let statusText = getStatusText(localProject);
-
-        //         localState.project = localProject;
-        //         localState.statusText = statusText;
-        //         localState.isComplete = isComplete;
-
-        //         setState(localState);
-
-        //         // setProject(localProject);
-        //         // updateProjectState(localProject);
-        //         // updateIsComplete(localProject);
-        //     });
-
-        //     // Unsubscribe when component will unmount to prevent memory leak
-        //     return () => { unsubScribe() };
-        // }
     }, []);
 
     return (
@@ -124,12 +143,12 @@ export default function AddEditProjectScreen({route, navigation}) {
             { isLoading && <CustomActivityIndicator /> }
 
             <Text style={[styles.label, {marginTop: 2}]}>Project Name:</Text>
-            <TextInput style={styles.textInput} placeholder='Enter Project Name' value={state.project.name} onChangeText={(textValue) => updateProjectState('name', textValue)}/>
+            <TextInput style={styles.textInput} placeholder='Enter Project Name' value={project.name} onChangeText={(textValue) => updateProjectState('name', textValue)}/>
 
             <Text style={styles.label}>Project Description:</Text>
-            <TextInput multiline={true} numberOfLines={5} style={styles.multiLineInput} placeholder='Enter Project Description' value={state.project.description} onChangeText={(textValue) => updateProjectState('description', textValue)}/>
+            <TextInput multiline={true} numberOfLines={5} style={styles.multiLineInput} placeholder='Enter Project Description' value={project.description} onChangeText={(textValue) => updateProjectState('description', textValue)}/>
 
-            <Text style={[styles.label, {marginTop: 25,}]}>Members (count: {state.project.members.length})</Text>
+            <Text style={[styles.label, {marginTop: 25,}]}>Members (count: {project.members.length})</Text>
             <TouchableOpacity style={styles.listItem} onPress={() => navigateToMembersScreen()}>
                 <Card style={styles.card}>
                     <Text style={styles.text}>View / Add Members</Text>
@@ -137,15 +156,15 @@ export default function AddEditProjectScreen({route, navigation}) {
                 </Card>
             </TouchableOpacity>
 
-            <Text style={styles.label}>Tasks (count: {state.project.tasks.length})</Text>
-            <TouchableOpacity style={styles.listItem}>
+            <Text style={styles.label}>Tasks (count: {project.tasks.length})</Text>
+            <TouchableOpacity style={styles.listItem} onPress={() => navigateToTasksScreen()}>
                 <Card style={styles.card}>
                     <Text style={styles.text}>View / Add Tasks</Text>
                     <Text style={styles.text}>{'>'}</Text>
                 </Card>
             </TouchableOpacity>
 
-            <Text style={[styles.label, {marginTop: 25,}]}>Status: {state.statusText}</Text>
+            <Text style={[styles.label, {marginTop: 25,}]}>Status: {statusText}</Text>
 
             {   isComplete &&
                 <Text style={styles.label}>Cost:</Text>

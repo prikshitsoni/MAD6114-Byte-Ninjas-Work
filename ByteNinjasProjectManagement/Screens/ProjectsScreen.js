@@ -2,6 +2,8 @@ import { StatusBar } from 'expo-status-bar';
 import React, {useState, useLayoutEffect, useEffect, useRef} from 'react';
 import { StyleSheet, Text, View, FlatList, Button, Image } from 'react-native';
 
+import palette from 'google-material-color-palette-json';
+
 import CustomActivityIndicator from '../Components/CustomActivityIndicator';
 import ProjectListItem from '../Components/ProjectListItem';
 import { getAllProjects } from '../Helpers/ProjecstHelper';
@@ -118,15 +120,22 @@ export default function ProjectsScreen({navigation}) {
     }, []);
 
     return (
-        <View style={styles.container}>
-            { isLoading && <CustomActivityIndicator /> }
-            <FlatList
-                style={styles.flatList}
-                data={projects} 
-                renderItem={({item}) => <ProjectListItem project={item} onPress={() => navigateToAddEditScreen(item.id)}/>}
-            />
-            <StatusBar style="auto" />
-        </View>
+            <View style={styles.container}>
+                { isLoading && <CustomActivityIndicator /> }
+                { 
+                    (projects.length === 0) &&
+                    <Text style={styles.emptyText}>You Don't have any Projects. Tap 'Add' to add Projects.</Text>
+                }
+                {
+                    (projects.length !== 0) &&
+                    <FlatList
+                        style={styles.flatList}
+                        data={projects} 
+                        renderItem={({item}) => <ProjectListItem project={item} onPress={() => navigateToAddEditScreen(item.id)}/>}
+                    />
+                }
+                <StatusBar style="auto" />
+            </View>
     );
 }
 
@@ -139,5 +148,16 @@ const styles = StyleSheet.create({
     },
     flatList: {
         width: '100%',
+    },
+    emptyText: {
+        textAlign: 'center',
+        fontSize: 20,
+        fontWeight: '500',
+        paddingTop: 15, 
+        paddingBottom: 10,
+        paddingLeft: 10, 
+        paddingRight: 10,
+        marginTop: 10,
+        color: palette.grey.shade_800,
     },
 });

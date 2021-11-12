@@ -55,9 +55,11 @@ const getUsers = (userEmails) => {
     const promise = new Promise( async (resolve, reject) => {
         try {
             let users = [];
-            const response = await firebase.firestore().collection('users').where('email', 'in', userEmails);
-            
-            response.forEach((document) => {
+            const querySnapshot = await firebase.firestore().collection('users').where('email', 'in', userEmails).get();
+            // console.log('get users');
+            // console.log(data);
+
+            querySnapshot.forEach((document) => {
                 let user = userConverter.fromFirebase(document);
                 users.push(user);
             });
@@ -71,4 +73,23 @@ const getUsers = (userEmails) => {
     return promise;
 };
 
-export { User, getUsers, getAllUsers };
+const getUser = (userId) => {
+    const promise = new Promise( async (resolve, reject) => {
+        try {
+            const querySnapshot = await firebase.firestore().collection('users').doc(userId).get();
+            
+            if (querySnapshot.exists) {
+                let user = userConverter.fromFirebase(querySnapshot);
+                resolve(user);
+            } else {
+                reject(new Error('User doesn\'t exist'));
+            }
+        } catch(error) {
+            reject(error);
+        }
+    });
+
+    return promise;
+}
+
+export { User, getUsers, getAllUsers, getUser };
