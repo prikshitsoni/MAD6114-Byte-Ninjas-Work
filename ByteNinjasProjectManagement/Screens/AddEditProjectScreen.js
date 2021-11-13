@@ -10,15 +10,12 @@ import { currentUser } from '../Firebase/config';
 import { addProject, getProject, updateProject, Project } from '../Helpers/ProjecstHelper';
 
 export default function AddEditProjectScreen({route, navigation}) {
-    const { projectId } = route.params;
+    let { projectId } = route.params;
 
     const mProject = useRef(new Project());
     const [isLoading, setIsLoading] = useState(false);
-    // const [state, setState] = useState({
-    //     'project': new Project(),
-    //     'statusText': '',
-    //     'isComplete': false,
-    // });
+    
+    const [projectIdState, setProjectIdState] = useState(projectId);
     const [project, setProject] = useState(new Project());
     const [statusText, setStatusText] = useState('');
     const [isComplete, setIsComplete] = useState(false);
@@ -69,6 +66,28 @@ export default function AddEditProjectScreen({route, navigation}) {
         navigation.goBack();
     }
 
+    const preSaveProject = async () => {
+        setIsLoading(true);
+
+        try {
+            let document = await addProject(mProject.current);
+            projectId = document.id;
+
+            let localProject = { ...mProject.current };
+            localProject.id = document.id;
+
+            mProject.current = localProject;
+            setProjectIdState(document.id);
+
+            setIsLoading(false);
+        } catch (error) {
+            setIsLoading(false);
+
+            console.log(error);
+            Alert.alert('Error', 'Error performing initial save to firebase');
+        }
+    };
+
     const onSavePressed = async () => {
         // Validate Fields
         console.log(currentUser.email);
@@ -97,12 +116,20 @@ export default function AddEditProjectScreen({route, navigation}) {
     }
 
     // Navigation
-    const navigateToMembersScreen = () => {
+    const navigateToMembersScreen = async () => {
+        if (projectIdState === null || projectIdState.length === 0) {
+            console.log('in navigate to members');
+            await preSaveProject();   
+        }
+
         navigation.navigate('Members', { 'project': mProject.current, 'doneCallback': doneCallbackFromMembers });
     };
 
-    const navigateToTasksScreen = () => {
-        console.log('in navigate');
+    const navigateToTasksScreen = async () => {
+        if (projectIdState === null || projectIdState.length === 0) {
+            await preSaveProject();   
+        }
+
         navigation.navigate('Tasks', { 'project': mProject.current, 'doneCallback':  donecallbackFromTasks });
     };
 
@@ -117,11 +144,11 @@ export default function AddEditProjectScreen({route, navigation}) {
     }, [navigation]);
 
     useEffect(() => {
-        if (!projectId) {
+        if (!projectIdState) {
             return;
         }
 
-        let unsubScribe = getProject(projectId, (project) => {
+        let unsubScribe = getProject(projectIdState, (project) => {
             // const localState = { ...state };
             const localProject = {...project}; // Copy
             const isComplete = getIsComplete(localProject);
@@ -136,7 +163,7 @@ export default function AddEditProjectScreen({route, navigation}) {
 
         // Unsubscribe when component will unmount to prevent memory leak
         return () => { unsubScribe() };
-    }, []);
+    }, [projectIdState]);
 
     return (
         <ScrollView contentContainerStyle={styles.container}>

@@ -7,6 +7,7 @@ import { Card } from 'react-native-shadow-cards';
 import CustomActivityIndicator from '../Components/CustomActivityIndicator';
 import MemberListItem from '../Components/MemberListItem';
 
+import { getProject } from '../Helpers/ProjecstHelper';
 import { getUsers } from '../Helpers/UsersHelper';
 
 export default function ProjectMembersScreen({route, navigation}) {
@@ -15,6 +16,7 @@ export default function ProjectMembersScreen({route, navigation}) {
     const { doneCallback } = route.params;
 
     // Mutable References
+    const mProject = useRef({...project});
     const mMembers = useRef([]);
 
     // State Variables
@@ -35,12 +37,13 @@ export default function ProjectMembersScreen({route, navigation}) {
     };
 
     const donePressed = () => {
-        doneCallback(mMembers.current);
+        navigation.goBack();
+        // doneCallback(mMembers.current);
     };
 
     // Navigation
     const navigateToSelectMembers = () => {
-        navigation.navigate('Select Members', { "currentMembers": mMembers.current, "doneCallback": doneCallbackFromSelect });
+        navigation.navigate('Select Members', { "project": mProject.current, "currentMembers": mMembers.current, "doneCallback": doneCallbackFromSelect });
     };
 
     // Lifecycles
@@ -55,23 +58,31 @@ export default function ProjectMembersScreen({route, navigation}) {
 
     useEffect( async () => {
         console.log('In use effect');
-        if (!project || project.members.length === 0) {
-            return;
-        }
 
-        setIsLoading(true);
+        let unsubScribe = getProject(project.id, async (project) => {
+            mProject.current = { ...project };
+            
+            if (!project || project.members.length === 0) {
+                return;
+            }
 
-        try {
-            let localMembers = await getUsers(project.members);
+            setIsLoading(true);
 
-            mMembers.current = localMembers.concat([]);
-            setMembers(localMembers);
-            setIsLoading(false);
-        } catch (error) {
-            setIsLoading(false);
-            console.log(error);
-            Alert.alert("Error", "Error fetching members");
-        }
+            try {
+                let localMembers = await getUsers(project.members);
+
+                mMembers.current = localMembers.concat([]);
+                setMembers(localMembers);
+                setIsLoading(false);
+            } catch (error) {
+                setIsLoading(false);
+                console.log(error);
+                Alert.alert("Error", "Error fetching members");
+            }
+        });
+
+        // Unsubscribe when component will unmount to prevent memory leak
+        return () => { unsubScribe() };
     }, []);
 
     // Render

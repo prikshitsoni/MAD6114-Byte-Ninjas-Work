@@ -1,12 +1,14 @@
 import { StatusBar } from 'expo-status-bar';
 import React, {useState, useLayoutEffect, useEffect, useRef} from 'react';
-import { StyleSheet, Text, View, FlatList, Button, Image } from 'react-native';
+import { StyleSheet, Text, View, FlatList, Button, Image, Alert } from 'react-native';
 
 import CustomActivityIndicator from '../Components/CustomActivityIndicator';
 import SelectMemberListItem from '../Components/SelectMemberListItem';
+import { updateProject } from '../Helpers/ProjecstHelper';
 import { getAllUsers } from '../Helpers/UsersHelper';
 
 export default function SelectMembersScreen({route, navigation}) {
+    const { project } = route.params;
     const { currentMembers } = route.params;
     const { doneCallback } = route.params;
     
@@ -23,7 +25,7 @@ export default function SelectMembersScreen({route, navigation}) {
         for (let i = 0; i < users.length; i++) {
             let user = users[i];
 
-            if (currentMembers.findIndex(u => u.email === user.email) !== -1) {
+            if (project.members.findIndex(email => email === user.email) !== -1) {
                 localIndexes[i] = true;
             }
         }
@@ -36,30 +38,39 @@ export default function SelectMembersScreen({route, navigation}) {
         let localIndexes = selectedIndexes.concat([]);
         localIndexes[index] = !localIndexes[index];
 
-        console.log('index: ' + index);
-        console.log('new value: ' + localIndexes[index]);
-
-        console.log(localIndexes);
-
         mSelectedIndexes.current = localIndexes.concat([]);
         setSelectedIndexes(localIndexes);
     }
 
-    const donePressed = () => {
-        console.log('done pressed');
-        console.log('users length: ' + mUsers.current.length);
-        console.log(mSelectedIndexes.current);
+    const donePressed = async () => {
         let selectedUsers = [];
+        let selectedUserEmails = [];
 
         for (let i = 0; i < mUsers.current.length; i++) {
-            console.log("index: " + i)
-            console.log("selected: " + mSelectedIndexes.current[i]);
             if (mSelectedIndexes.current[i]) {
                 selectedUsers.push(mUsers.current[i]);
+                selectedUserEmails.push(mUsers.current[i].id);
             }
         }
 
-        doneCallback(selectedUsers);
+        try {
+            setIsLoading(true);
+
+            console.log('in done pressed');
+            console.log(project.id);
+
+            project.members = selectedUserEmails;
+            await updateProject(project.id, project);
+
+            setIsLoading(false);
+            navigation.goBack();
+        } catch (error) {
+            setIsLoading(false);
+
+            console.log(error);
+            Alert.alert('Error', 'Error Saving Selected Members.');
+        }
+        // doneCallback(selectedUsers);
     }
 
     useLayoutEffect(() => {
