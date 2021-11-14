@@ -14,6 +14,7 @@ import SelectMembersScreen from './Screens/SelectMembersScreen';
 import ProjectTasksScreen from './Screens/ProjectTasksScreen';
 import AddEditTaskScreen from './Screens/AddEditTaskScreen';
 import AssignMemberScreen from './Screens/AssignMemberScreen';
+import SelectPrerequisitesScreen from './Screens/SelectPrerequisitesScreen';
 
 import MyTasksScreen from './Screens/MyTasksScreen';
 import ProfileScreen from './Screens/ProfileScreen';
@@ -60,6 +61,7 @@ const ProjectStackNavigator = () => {
             <ProjectsStack.Screen name="Tasks" component={ProjectTasksScreen} />
             <ProjectsStack.Screen name="Add Task" component={AddEditTaskScreen} />
             <ProjectsStack.Screen name="Assign Member" component={AssignMemberScreen} />
+            <ProjectsStack.Screen name="Select Pre-requisites" component={SelectPrerequisitesScreen} />
         </ProjectsStack.Navigator>
     );
 }

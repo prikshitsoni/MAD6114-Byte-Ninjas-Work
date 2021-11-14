@@ -13,6 +13,8 @@ export default function AddEditProjectScreen({route, navigation}) {
     let { projectId } = route.params;
 
     const mProject = useRef(new Project());
+    const mUnsubscribe = useRef(null);
+
     const [isLoading, setIsLoading] = useState(false);
     
     const [projectIdState, setProjectIdState] = useState(projectId);
@@ -161,9 +163,13 @@ export default function AddEditProjectScreen({route, navigation}) {
             setStatusText(statusText);
         });
 
-        // Unsubscribe when component will unmount to prevent memory leak
-        return () => { unsubScribe() };
+        mUnsubscribe.current = unsubScribe;
     }, [projectIdState]);
+
+    useEffect(() => {
+        // Unsubscribe when component will unmount to prevent memory leak
+        return () => { console.log('in add edit project unsubscribe'); mUnsubscribe.current(); };
+    }, []);
 
     return (
         <ScrollView contentContainerStyle={styles.container}>

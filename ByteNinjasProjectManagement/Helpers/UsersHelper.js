@@ -76,6 +76,10 @@ const getUsers = (userEmails) => {
 const getUser = (userId) => {
     const promise = new Promise( async (resolve, reject) => {
         try {
+            if (userId === null || userId.length === 0) {
+                reject('User id is invalid');
+            }
+    
             const querySnapshot = await firebase.firestore().collection('users').doc(userId).get();
             
             if (querySnapshot.exists) {

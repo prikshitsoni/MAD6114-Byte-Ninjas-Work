@@ -5,104 +5,113 @@ import { StyleSheet, Text, View, FlatList, Button, Image, TouchableOpacity, Aler
 import palette from 'google-material-color-palette-json';
 import { Card } from 'react-native-shadow-cards';
 import CustomActivityIndicator from '../Components/CustomActivityIndicator';
-import MemberListItem from '../Components/MemberListItem';
+import TaskListItem from '../Components/TaskListItem';
 
 import { getProject } from '../Helpers/ProjecstHelper';
-import { getUsers } from '../Helpers/UsersHelper';
+import { getTasks } from '../Helpers/TasksHelper';
 
-export default function ProjectMembersScreen({route, navigation}) {
+export default function ProjectTasksScreen({route, navigation}) {
     // Screen Params
     const { project } = route.params;
     const { doneCallback } = route.params;
 
     // Mutable References
     const mProject = useRef({...project});
-    const mMembers = useRef([]);
+    const mTasks = useRef([]);
 
     // State Variables
     const [isLoading, setIsLoading] = useState(false);
-    const [members, setMembers] = useState([]);
+    const [tasks, setTasks] = useState([]);
 
     // Methods
-    const doneCallbackFromSelect = (selectedMembers) => {
-        let localSelectedMembers = selectedMembers.concat([]);
+    const saveCallbackFromAddEdit = (task) => {
+        const localTask = {...task};
+        const localTasks = mTasks.current.concat([]);
+        const index = localTasks.findIndex(t => t.id === task.id);
 
-        console.log(localSelectedMembers);
+        if (index === -1) {
+            localTasks.push(localTask);
+        } else {
+            localTasks[index] = localTask;
+        }
 
-        project.members = localSelectedMembers.map((u => u.email));
-        mMembers.current = localSelectedMembers.concat([]);
-        setMembers(localSelectedMembers);
+        mTasks.current = localTasks.concat([]);
+        setTasks(localTasks);
 
         navigation.goBack();
     };
 
     const donePressed = () => {
         navigation.goBack();
-        // doneCallback(mMembers.current);
+        // doneCallback(mTasks.current);
     };
 
     // Navigation
-    const navigateToSelectMembers = () => {
-        navigation.navigate('Select Members', { "project": mProject.current, "currentMembers": mMembers.current, "doneCallback": doneCallbackFromSelect });
-    };
+    const navigateToAddEditTask = (taskId = '') => {
+        navigation.navigate('Add Task', { 'project': mProject.current, 'taskId': taskId, 'saveCallback': saveCallbackFromAddEdit })
+    }
 
     // Lifecycles
     useLayoutEffect(() => {
         navigation.setOptions({
             headerRight: () => (
-                <Button title='Done' color='#fff' onPress={() => donePressed()}/>
+                <View style={ {flexDirection:'row',} }>
+                    <Button title='Add' color='#fff' onPress={() => navigateToAddEditTask()}/>
+                    <Button title='Done' color='#fff' onPress={() => donePressed()}/>
+                </View>
                 // <Image source={require('../assets/byte-ninja.png')} style={{width: 20, height: 20, marginRight: 5,}}></Image>
             ),
         });
     }, [navigation]);
 
-    useEffect( async () => {
-        let unsubScribe = getProject(project.id, async (project) => {
+    useEffect(() => {
+        console.log('project tasks screen use effect');
+
+        let unsubscribe = getProject(mProject.current.id, async (project) => {
+            console.log('get project callback');
+
             mProject.current = { ...project };
             
-            if (!project || project.members.length === 0) {
+            if (!project || project.tasks.length === 0) {
                 return;
             }
 
             setIsLoading(true);
 
             try {
-                let localMembers = await getUsers(project.members);
-
-                mMembers.current = localMembers.concat([]);
-                setMembers(localMembers);
+                let localTasks = await getTasks(project.tasks);
+                console.log('in local tasks');
+                console.log(localTasks);
+    
+                mTasks.current = localTasks.concat([]);
+    
+                setTasks(localTasks);
                 setIsLoading(false);
             } catch (error) {
                 setIsLoading(false);
                 console.log(error);
-                Alert.alert("Error", "Error fetching members");
+                Alert.alert("Error", "Error fetching tasks");
             }
         });
 
         // Unsubscribe when component will unmount to prevent memory leak
-        return () => { unsubScribe() };
+        return () => { console.log('unsubscribe project tasks'); unsubscribe() };
     }, []);
 
     // Render
     return (
         <View style={styles.container}>
             { isLoading && <CustomActivityIndicator /> }
-            <TouchableOpacity style={styles.listItem} onPress={() => navigateToSelectMembers()}>
-                <Card style={styles.card}>
-                    <Text style={styles.text}>Select Members</Text>
-                    <Text style={styles.text}>{'>'}</Text>
-                </Card>
-            </TouchableOpacity>
             { 
-                (members.length === 0) &&
-                <Text style={styles.emptyText}>You Don't have any Project Members. Tap 'Select Members' to add Members to the Project.</Text>
+                (tasks.length === 0) &&
+                <Text style={styles.emptyText}>You Don't have any Project Tasks. Tap 'Add' to add Tasks to the Project.</Text>
             }
             {
-                (members.length !== 0) &&
+                (tasks.length !== 0) &&
                 <FlatList
                     style={styles.flatList}
-                    data={members} 
-                    renderItem={({item}) => <MemberListItem member={item} />}
+                    data={tasks}
+                    renderItem={({item}) => <TaskListItem task={item} onPress={() => navigateToAddEditTask(item.id)}/>}
                 />   
             }
             <StatusBar style="auto" />

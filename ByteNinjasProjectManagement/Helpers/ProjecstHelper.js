@@ -67,6 +67,8 @@ const getAllProjects = (callback) => {
 
 const getProject = (projectId, callback) => {
     const unsubscribe = firebase.firestore().collection('projects').doc(projectId).onSnapshot((document) => {
+        console.log('get project onsnapshot called');
+
         let data = document.data();
         let project = new Project(document.id, data.name, data.description, data.tasks, data.members, data.tasksCompleted, data.totalCost, data.createdOn, data.ownerId);
 
@@ -99,6 +101,7 @@ const updateProject = (projectId, project) => {
 
     const promise = new Promise(async (resolve, reject) => {
         try {
+            console.log('in update project');
             const response = await firebase.firestore().collection('projects').doc(projectId).update(firebaseProject);
             resolve(response);
         } catch(error) {
