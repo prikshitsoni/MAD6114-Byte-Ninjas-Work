@@ -48,7 +48,8 @@ export default function ProjectTasksScreen({route, navigation}) {
 
     // Navigation
     const navigateToAddEditTask = (taskId = '') => {
-        navigation.navigate('Add Task', { 'project': mProject.current, 'taskId': taskId, 'saveCallback': saveCallbackFromAddEdit })
+        let headerTitle = (taskId.length === 0) ? 'Add Task' : 'Edit Task';
+        navigation.navigate('Add Task', { 'project': mProject.current, 'taskId': taskId, 'headerTitle': headerTitle, 'saveCallback': saveCallbackFromAddEdit })
     }
 
     // Lifecycles

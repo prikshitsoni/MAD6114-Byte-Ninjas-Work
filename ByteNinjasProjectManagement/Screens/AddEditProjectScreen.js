@@ -17,9 +17,11 @@ export default function AddEditProjectScreen({route, navigation}) {
 
     const [isLoading, setIsLoading] = useState(false);
     
+    const [originalProjectId, setOriginalProjectId] = useState(projectId);
     const [projectIdState, setProjectIdState] = useState(projectId);
     const [project, setProject] = useState(new Project());
     const [statusText, setStatusText] = useState('');
+    const [costText, setCostText] = useState('');
     const [isComplete, setIsComplete] = useState(false);
 
     // Methods
@@ -32,6 +34,15 @@ export default function AddEditProjectScreen({route, navigation}) {
         let localIsComplete = (project.tasksCompleted === project.tasks.length) &&
             (project.tasks.length !== 0);
         return localIsComplete;
+    }
+
+    const getCostText = (project) => {
+        let costString = project.totalCost.toLocaleString('en-CA', { 
+            style: 'currency',
+            currency: 'CAD',
+         });
+
+         return costString
     }
 
     const updateProjectState = (key, value) => {
@@ -124,7 +135,7 @@ export default function AddEditProjectScreen({route, navigation}) {
             await preSaveProject();   
         }
 
-        navigation.navigate('Members', { 'project': mProject.current, 'doneCallback': doneCallbackFromMembers });
+        navigation.navigate('Members', { 'project': mProject.current, /*'doneCallback': doneCallbackFromMembers*/ });
     };
 
     const navigateToTasksScreen = async () => {
@@ -132,7 +143,7 @@ export default function AddEditProjectScreen({route, navigation}) {
             await preSaveProject();   
         }
 
-        navigation.navigate('Tasks', { 'project': mProject.current, 'doneCallback':  donecallbackFromTasks });
+        navigation.navigate('Tasks', { 'project': mProject.current, /*'doneCallback':  donecallbackFromTasks*/ });
     };
 
     // Lifecycles
@@ -155,12 +166,14 @@ export default function AddEditProjectScreen({route, navigation}) {
             const localProject = {...project}; // Copy
             const isComplete = getIsComplete(localProject);
             const statusText = getStatusText(localProject);
+            const localCostText = getCostText(localProject);
 
             setProject(localProject);
             mProject.current = {...localProject};
 
             setIsComplete(isComplete);
             setStatusText(statusText);
+            setCostText(localCostText);
         });
 
         mUnsubscribe.current = unsubScribe;
@@ -197,10 +210,13 @@ export default function AddEditProjectScreen({route, navigation}) {
                 </Card>
             </TouchableOpacity>
 
-            <Text style={[styles.label, {marginTop: 25,}]}>Status: {statusText}</Text>
+            {
+                (originalProjectId !== null && originalProjectId.length > 0) &&
+                <Text style={[styles.label, {marginTop: 25,}]}>Status: {statusText}</Text>
+            }
 
             {   isComplete &&
-                <Text style={styles.label}>Cost:</Text>
+                <Text style={styles.label}>Cost: {costText}</Text>
             }
 
             <CustomButton style={styles.saveButton} title='Save' onPress={() => onSavePressed()}/>

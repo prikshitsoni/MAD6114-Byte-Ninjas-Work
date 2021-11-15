@@ -93,7 +93,9 @@ export default function ProjectsScreen({navigation}) {
     // ]);
 
     const navigateToAddEditScreen = (projectId = '') => {
-        navigation.navigate('Add Project', { "projectId": projectId });
+        let headerTitle = (projectId.length === 0) ? 'Add Project' : 'Edit Project';
+
+        navigation.navigate('Add Project', { "projectId": projectId, 'headerTitle': headerTitle} );
     };
 
     useLayoutEffect(() => {

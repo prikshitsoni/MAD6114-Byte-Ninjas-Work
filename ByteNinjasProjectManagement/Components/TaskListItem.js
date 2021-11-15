@@ -6,6 +6,8 @@ import {Card} from 'react-native-shadow-cards';
 import PillView from './PillView';
 
 export default function TaskListItem({task, onPress}) {
+    console.log('in task item');
+    console.log(task);
     return(
         <TouchableOpacity style={styles.listItem} onPress={() => onPress()}>
             <Card style={styles.card}>

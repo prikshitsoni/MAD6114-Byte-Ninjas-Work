@@ -26,6 +26,10 @@ export default function AddEditTaskScreen({route, navigation}) {
     
     // State Variables
     const [isLoading, setIsLoading] = useState(false);
+    const [originalTaskId, setOriginalTaskId] = useState(taskId);
+    const [costText, setCostText] = useState('');
+    const [startDateText, setStartDateText] = useState('');
+    const [endDateText, setEndDateText] = useState('');
     const [taskIdState, setTaskIdState] = useState(taskId);
     const [task, setTask] = useState(new Task());
 
@@ -36,6 +40,25 @@ export default function AddEditTaskScreen({route, navigation}) {
 
         setTask(localTask);
         mTask.current = {...localTask};
+    }
+
+    const getCostText = (task) => {
+        let costString = task.cost.toLocaleString('en-CA', { 
+            style: 'currency',
+            currency: 'CAD',
+         });
+
+         return costString
+    }
+
+    const getDateText = (timestamp) => {
+        let date = new Date(timestamp);
+        let dateString = date.toLocaleString('en-CA', {
+            dateStyle: 'medium',
+            timeStyle: 'short',
+        });
+
+        return dateString;
     }
 
     const doneCallbackFromAssignMember = (member) => {
@@ -52,6 +75,7 @@ export default function AddEditTaskScreen({route, navigation}) {
         setIsLoading(true);
 
         try {
+            mTask.current.projectId = mProject.current.id;
             let document = await addTask(mTask.current);
             
             let localProject = {...mProject.current};
@@ -81,6 +105,7 @@ export default function AddEditTaskScreen({route, navigation}) {
             if (mTaskId.current !== null && mTaskId.current.length !== 0) {
                 await updateTask(mTaskId.current, mTask.current);
             } else {
+                mTask.current.projectId = mProject.current.id;
                 let document = await addTask(mTask.current);
                 mTask.current.id = document.id;
             }
@@ -135,6 +160,16 @@ export default function AddEditTaskScreen({route, navigation}) {
         let unsubscribe = getTask(mTaskId.current, (task) => {
             const localTask = {...task};
             setTask(localTask);
+
+            let localCostText = getCostText(localTask);
+            setCostText(localCostText);
+
+            let localStartDateText = getDateText(localTask.startDate);
+            setStartDateText(localStartDateText);
+
+            let localEndDateText = getDateText(localTask.endDate);
+            setEndDateText(localEndDateText);
+
             mTask.current = {...localTask};
         });
 
@@ -175,15 +210,23 @@ export default function AddEditTaskScreen({route, navigation}) {
             </TouchableOpacity>
 
             {
-                (task.status === 'complete') &&
+                (originalTaskId !== null && originalTaskId.length > 0) &&
                 <Text style={[styles.label, {marginTop: 25,}]}>Status: {task.status}</Text>
             }
             {   (task.status === 'Complete') &&
-                <Text style={styles.label}>Hours: {task.hours} hrs</Text>
+                <Text style={styles.label}>Hours: {task.hours} hours</Text>
             }
             {
                 (task.status === 'Complete') &&
-                <Text style={styles.label}>Cost:</Text>
+                <Text style={styles.label}>Cost: {costText}</Text>
+            }
+            {
+                (originalTaskId !== null && originalTaskId.length > 0) &&
+                <Text style={styles.label}>Start Date: {startDateText}</Text>
+            }
+            {
+                (task.status === 'Complete') &&
+                <Text style={styles.label}>End Date: {endDateText}</Text>
             }
 
             <CustomButton style={styles.saveButton} title='Save' onPress={() => onSavePressed()}/>

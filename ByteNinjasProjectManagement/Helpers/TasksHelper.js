@@ -17,8 +17,9 @@ import { getUser } from "./UsersHelper";
  */
 
 class Task {
-    constructor(id = '', name = '', description = '', startDate = 0, endDate = 0, hours = 0, cost = 0, status = 'Pending', preRequisites = [], assignedUser = {}) {
+    constructor(id = '', projectId = '', name = '', description = '', startDate = 0, endDate = 0, hours = 0, cost = 0, status = 'Pending', preRequisites = [], assignedUser = {}) {
         this.id = id;
+        this.projectId = projectId;
         this.name = name;
         this.description = description;
         this.startDate = startDate;
@@ -35,6 +36,7 @@ const taskConverter = {
     toFirebase: (task) => {
         return {
             name: task.name,
+            projectId: task.projectId,
             description: task.description,
             startDate: task.startDate,
             endDate: task.endDate,
@@ -47,7 +49,7 @@ const taskConverter = {
     },
     fromFirebase: (snapshot) => {
         const data = snapshot.data();
-        return new Task(snapshot.id, data.name, data.description, data.startDate, data.endDate, data.hours, data.cost, data.status, data.preRequisites);
+        return new Task(snapshot.id, data.projectId, data.name, data.description, data.startDate, data.endDate, data.hours, data.cost, data.status, data.preRequisites);
     },
 }
 
@@ -71,7 +73,7 @@ const getTasks = (taskIds) => {
 
             console.log('assigned user emails');
             console.log(assignedUserEmails);
-            
+
             for (let i = 0; i < tasks.length; i++) {
                 let task = tasks[i];
                 let userEmail = assignedUserEmails[i];
@@ -92,6 +94,50 @@ const getTasks = (taskIds) => {
     });
 
     return promise;
+};
+
+const getTasksNoUsers = (taskIds) => {
+    const promise = new Promise( async (resolve, reject) => {
+        try {
+            let tasks = [];
+
+            const querySnapshot = await firebase.firestore().collection('tasks')
+                .where(firebase.firestore.FieldPath.documentId(), 'in', taskIds).get();
+            
+            querySnapshot.forEach((document) => {
+                let task = taskConverter.fromFirebase(document);
+                
+                tasks.push(task);
+            });
+
+            resolve(tasks);
+        } catch (error) {
+            reject(error);
+        }
+    });
+
+    return promise;
+};
+
+const getMyTasks = async (callback) => {
+    let localUser = await getUser(currentUser.email);
+
+    const unsubscribe = firebase.firestore().collection('tasks')
+        .where('assignedUser', '==', currentUser.email).onSnapshot((querySnapshot) => {
+
+        let localTasks = [];
+
+        querySnapshot.forEach((document) => {
+            let task = taskConverter.fromFirebase(document);
+            task.assignedUser = localUser;
+            
+            localTasks.push(task);
+        });
+
+        callback(localTasks);
+    });
+
+    return unsubscribe;
 };
 
 const getTask = (taskId, callback) => {
@@ -142,4 +188,4 @@ const updateTask = (taskId, task) => {
     return promise;
 }
 
-export { Task, getTask, getTasks, addTask, updateTask };
+export { Task, getTask, getTasks, getTasksNoUsers, getMyTasks, addTask, updateTask };

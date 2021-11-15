@@ -78,6 +78,24 @@ const getProject = (projectId, callback) => {
     return unsubscribe;
 }
 
+const getProjectOnce = (projectId) => {
+    if (!projectId) {
+        reject('Invalid project id');
+    }
+
+    const promise = new Promise( async (resolve, reject) => {
+        try {
+            let document = await firebase.firestore().collection('projects').doc(projectId).get();
+            let project = projectConverter.fromFirebase(document);
+            resolve(project);
+        } catch (error) {
+            reject(error);
+        }
+    });
+
+    return promise;
+};
+
 const addProject = (project) => {
     project.ownerId = currentUser.email;
     project.createdOn = new Date().valueOf();
@@ -112,4 +130,4 @@ const updateProject = (projectId, project) => {
     return promise;
 }
 
-export { addProject, updateProject, getAllProjects, getProject, projectConverter, Project };
+export { addProject, updateProject, getAllProjects, getProject, getProjectOnce, projectConverter, Project };

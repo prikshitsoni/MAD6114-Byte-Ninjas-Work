@@ -27,7 +27,7 @@ export default function PillView({ status }) {
 
     return (
         <View style={[styles.listItemPill, { backgroundColor: pillColor() }]}>
-            <Text style={[styles.pillText, { color: textColor() }]}>In Progress</Text>
+            <Text style={[styles.pillText, { color: textColor() }]}>{status}</Text>
         </View>
     );
 }

@@ -43,7 +43,7 @@ export default function ProjectMembersScreen({route, navigation}) {
 
     // Navigation
     const navigateToSelectMembers = () => {
-        navigation.navigate('Select Members', { "project": mProject.current, "currentMembers": mMembers.current, "doneCallback": doneCallbackFromSelect });
+        navigation.navigate('Select Members', { "project": mProject.current, /*"currentMembers": mMembers.current, "doneCallback": doneCallbackFromSelect*/ });
     };
 
     // Lifecycles
