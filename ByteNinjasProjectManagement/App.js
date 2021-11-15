@@ -20,6 +20,11 @@ import MyTasksScreen from './Screens/MyTasksScreen';
 import ProfileScreen from './Screens/ProfileScreen';
 import LoginScreen from './Screens/LoginScreen';
 
+// prikshit==================================================
+import UserRegisterScreen from './Screens/UserRegisterScreen'
+import ResetPasswordScreen from './Screens/ResetPasswordScreen';
+// prikshit==================================================
+
 const TabNavigator = () => {
     return (
         <Tab.Navigator
@@ -33,6 +38,7 @@ const TabNavigator = () => {
                 },
                 headerShown: false,
             }}
+
         >
             <Tab.Screen name="Projects" component={ProjectStackNavigator} />
             <Tab.Screen name="My Tasks" component={MyTasksScreen} />
@@ -84,14 +90,32 @@ export default function App() {
                     },
                     headerShown: false,
                 }}>
+
                 <MainStack.Screen name='Login Screen' 
                     component={LoginScreen}
                     options={{headerShown: true}}>
                 </MainStack.Screen>
+
                 <MainStack.Screen name='Home' 
                     component={TabNavigator}
                     options={{ headerShown: false }}>
                 </MainStack.Screen>
+
+                {/* prikshit ------------------------------------------------*/}
+
+                <MainStack.Screen name='UserRegisterScreen' 
+                    component={UserRegisterScreen}
+                    options={{ headerShown: true }}>
+                </MainStack.Screen>
+
+                <MainStack.Screen name='ResetPasswordScreen' 
+                    component={ResetPasswordScreen}
+                    options={{ headerShown: true }}>
+                </MainStack.Screen>
+
+                {/* prikshit ------------------------------------------------*/}
+
+
             </MainStack.Navigator>
             <StatusBar style="auto" />
         </NavigationContainer>
