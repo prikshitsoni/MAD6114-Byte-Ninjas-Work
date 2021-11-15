@@ -103,7 +103,11 @@ export default function AddEditProjectScreen({route, navigation}) {
 
     const onSavePressed = async () => {
         // Validate Fields
-        console.log(currentUser.email);
+        if (mProject.current.name === null || mProject.current.name.length === 0) {
+            Alert.alert('Error', 'Please enter a valid project name');
+            return;
+        }
+
         setIsLoading(true);
 
         try {
@@ -192,7 +196,7 @@ export default function AddEditProjectScreen({route, navigation}) {
             <TextInput style={styles.textInput} placeholder='Enter Project Name' value={project.name} onChangeText={(textValue) => updateProjectState('name', textValue)}/>
 
             <Text style={styles.label}>Project Description:</Text>
-            <TextInput multiline={true} numberOfLines={5} style={styles.multiLineInput} placeholder='Enter Project Description' value={project.description} onChangeText={(textValue) => updateProjectState('description', textValue)}/>
+            <TextInput multiline={true} numberOfLines={5} style={styles.multiLineInput} placeholder='Enter Project Description (Optional)' value={project.description} onChangeText={(textValue) => updateProjectState('description', textValue)}/>
 
             <Text style={[styles.label, {marginTop: 25,}]}>Members (count: {project.members.length})</Text>
             <TouchableOpacity style={styles.listItem} onPress={() => navigateToMembersScreen()}>

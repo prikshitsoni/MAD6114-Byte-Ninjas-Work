@@ -98,7 +98,11 @@ export default function AddEditTaskScreen({route, navigation}) {
     };
 
     const onSavePressed = async () => {
-        // Validate Fields
+        if (mTask.current.name === null || mTask.current.name.length === 0) {
+            Alert.alert('Error', 'Please enter a valid task name.');
+            return;
+        }
+
         setIsLoading(true);
 
         try {
@@ -188,7 +192,7 @@ export default function AddEditTaskScreen({route, navigation}) {
             <TextInput style={styles.textInput} placeholder='Enter Task Name' value={task.name} onChangeText={(textValue) => updateTaskState('name', textValue)}/>
 
             <Text style={styles.label}>Task Description:</Text>
-            <TextInput multiline={true} numberOfLines={5} style={styles.multiLineInput} placeholder='Enter Task Description' value={task.description} onChangeText={(textValue) => updateTaskState('description', textValue)}/>
+            <TextInput multiline={true} numberOfLines={5} style={styles.multiLineInput} placeholder='Enter Task Description (Optional)' value={task.description} onChangeText={(textValue) => updateTaskState('description', textValue)}/>
 
             <Text style={[styles.label, {marginTop: 25,}]}>Assigned Member</Text>
             <TouchableOpacity style={styles.listItem} onPress={() => navigateToAssignMemberScreen()}>
