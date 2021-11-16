@@ -24,6 +24,9 @@ import MyTaskPrerequisitesScreen from './Screens/MyTaskPrerequisitesScreen';
 import ProfileScreen from './Screens/ProfileScreen';
 import LoginScreen from './Screens/LoginScreen';
 
+import UserRegisterScreen from './Screens/UserRegisterScreen'
+import ResetPasswordScreen from './Screens/ResetPasswordScreen';
+
 const TabNavigator = () => {
     return (
         <Tab.Navigator
@@ -146,6 +149,22 @@ export default function App() {
                     component={TabNavigator}
                     options={{ headerShown: false }}>
                 </MainStack.Screen>
+                
+
+                    <MainStack.Screen name='UserRegisterScreen' 
+                    component={UserRegisterScreen}
+                    options={{ headerShown: true }}>
+                </MainStack.Screen>
+
+                <MainStack.Screen name='ResetPasswordScreen' 
+                    component={ResetPasswordScreen}
+                    options={{ headerShown: true }}>
+                </MainStack.Screen>
+
+
+
+
+
             </MainStack.Navigator>
             <StatusBar style="auto" />
         </NavigationContainer>

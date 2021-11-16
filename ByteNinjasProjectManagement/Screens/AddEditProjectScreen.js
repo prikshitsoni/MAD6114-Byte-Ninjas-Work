@@ -111,7 +111,7 @@ export default function AddEditProjectScreen({route, navigation}) {
         setIsLoading(true);
 
         try {
-            if (projectId) {
+            if (mProject.current.id !== null || mProject.current.id.length > 0) {
                 await updateProject(projectId, mProject.current);
             } else {
                 await addProject(mProject.current);

@@ -1,7 +1,7 @@
 import { getAuth, signInWithEmailAndPassword } from '@firebase/auth';
 import { StatusBar } from 'expo-status-bar';
 import React, {useState} from 'react';
-import { StyleSheet, Text, View, TextInput, Image, Alert } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Image, Alert,Button } from 'react-native';
 import CustomButton from '../Components/CustomButton';
 import { firebase } from '../Firebase/config';
 
@@ -30,15 +30,18 @@ export default function LoginScreen({navigation}) {
                 Alert.alert("Sign in Error", "Please check username and password");
             });
     };
-
     return (
         <View style={styles.container}>
-            <Image source={require('../assets/byte-ninja.png')} style={{width: 150, height: 150,}}></Image>
-            <Text style={styles.text}>Byte Ninjas Work for Project Management</Text>
+            <Image source={require('../assets/Logo.png')} style={{width: 300, height: 300,}}></Image>
             <TextInput style={styles.textInput} placeholder='Enter Email' value={emailVal} onChangeText={onEmailChanged}></TextInput>
             <TextInput secureTextEntry={true} style={styles.textInput} placeholder='Enter Password' value={passwordVal} onChangeText={onPasswordChanged}></TextInput>
+            <Button title={'Forget Password ?'} onPress={() => navigation.navigate('ResetPasswordScreen')}></Button>
+
 
             <CustomButton style={styles.btn} title='Login' onPress={() => performLogin()}/>
+
+            <Button style={styles.btn} title="Don't have an account? Sign Up ." onPress={() => navigation.navigate('UserRegisterScreen')}></Button>
+
             <StatusBar style="auto" />
         </View>
     );
@@ -73,5 +76,6 @@ const styles = StyleSheet.create({
     btn: {
         width: '100%',
         marginTop: 50,
+        marginBottom:10,
     },
 });
